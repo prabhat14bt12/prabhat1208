@@ -1,0 +1,27 @@
+import boto3
+import json
+
+s3_client = boto3.client('s3')
+db        = boto3.resource('dynamodb')
+table = db.Table('demoyt')
+
+def lambda_handler(event, context):
+    print(event)
+    bucket = event['Records'][0]['s3']['bucket']['name']
+    filename = event['Records'][0]['s3']['object']['key']
+    
+    print(bucket, filename)
+    
+    
+    response = s3_client.get_object(Bucket=bucket, Key=filename)
+    body = response['Body']
+    reader = body.read()
+    jsonDict = json.loads(reader)
+    
+    print(jsonDict)
+    
+    
+    response_to_db = table.put_item(Item=jsonDict)
+    # delete_item = table.delete_item(Key={'id':66})
+    
+    return "Successfully inserted the data in Dynamo DB Table"
